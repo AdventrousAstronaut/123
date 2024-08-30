@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/user.css">
+    <link rel="stylesheet" href="/static/css/draggable.css">
+    <link rel="stylesheet" href="/static/css/chatroom.css">
+    <link rel="stylesheet" href="/static/css/gamma-lookup.css">
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-database.js"></script>
+
+    <script src="/javascript/db/core.js"></script>
+    <script src="/javascript/db/user.js"></script>
+
+
+
+    <script src="/javascript/color-gamma/core_data.js"></script>
+    <script src="/javascript/color-gamma/core_func.js"></script>
+    <script src="/javascript/color-gamma/diagram.js"></script>
+    <script src="/javascript/multi-player/colorReference.js"></script>
+
+
+    <!-- FOR GAMMA-LOOKUP TABLE -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="/javascript/gamma-lookup/table.js"></script>
+
+
+    <script src="/static/package/moment.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+
+</head>
+
+<body>
+    <!-- NAVIGATION BAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQpDICm6ebbKflqDZige26kOpmDdafctwtNA&s"
+                width="160" height="30" class="d-inline-block align-top" alt="">
+
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a href="/view/public/common" class="nav-link" style="cursor: pointer;">Home</a>
+                </li>
+                <li class="nav-item active">
+                    <!-- 啟用狀態 - 用 .active - 表示當前頁面。可直接用於 .nav-link 或直屬的 .nav-item -->
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">MySpace<span
+                            class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link" href="/">SOLO Player</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="signOut()" style="cursor: pointer;">SignOut</a>
+                </li>
+            </ul>
+
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <!-- Modal -->
+        <div class="modal fade" id="contactsModal" tabindex="-1" role="dialog" aria-labelledby="contactsModalLabel"
+            aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="contactsModalLabel">Select Contacts</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="contacts-list" style="max-height: 200px; overflow-y: auto;">
+                            <!-- Contacts will be rendered here -->
+                        </div>
+                        <hr>
+                        <h6>Chosen Contacts:</h6>
+                        <div class="chosen-list">
+                            <!-- Chosen contacts will appear here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="sendButton">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- USER INFORMATION GROUP -->
+    <div class="row mt-4 justify-content-center" id="user-con">
+
+        <div class="col-sm-3">
+            <div class="card text-center">
+                <div class="card-body" id="aboutUser">
+                    <img id="avatar" src="./../../static/images/anonmous_1.jpg" alt="">
+                    <h5 class="card-title" id="cardUserName">${about.name}</h5>
+                    <div class="user-info">
+                        <p class="card-text" id="cardCompanyName" style="margin-bottom: 0px;">${Company name}</p>
+                        <p class="card-text" id="cardUserPosition" style="margin-bottom: 0px;">${User position}</p>
+                        <p class="card-text" id="cardIntroduction">${Introduction about the user.}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- THIS IS CONTACTS CONTAINER -->
+        <div class="col-sm-5">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">CONTACTS&nbsp;&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-info"
+                            id="addNewConactsBtn">+new contacts</button></h5>
+
+
+                    <p class="card-text">By agreeing to our <a href="#">Data-Sharing policy</a>, you can share your
+                        result to your client or engineer.</p>
+                    <div class="list-group" id="contacts-list">
+                        <!-- <button type="button" class="list-group-item list-group-item-action">
+                            Render Contacts here
+                        </button> -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HERE IS CONTROL PANEL -->
+        <div class="col-sm-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">CONTROL PANEL</h5>
+                    <p>Here put the default display setting.</p>
+
+                    <!-- DEFAULT ISCOLORSPACE OR GAMMACURVE     -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="defaultgamma"
+                            onclick="getDefaultDisplay()">
+                        <label class="form-check-label" for="defaultgamma">
+                            Gamma Curve
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="defaultspace"
+                            onclick="getDefaultDisplay()" checked>
+                        <label class="form-check-label" for="defaultspace">
+                            Color Space
+                        </label>
+                    </div>
+
+                    <div class="input-group mb-3 mt-3">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="importFile">
+                            <label class="custom-file-label text-left" for="inputGroupFile02"
+                                aria-describedby="inputGroupFileAddon02">Drop csv, xlsx type</label>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-warning w-100" id="labWindowControl"
+                        style="height: 70px;" onClick="toggleLabDisplay();">Open
+                        Lab</button>
+
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="mt-4 mb-4 d-flex justify-content-center align-items-center">
+        <img src="./../../static/images/a_2.jpg"
+            style="max-width: 90%;height: auto;display: block; border-radius: 4px black ; box-shadow: 5px 8px 8px #888888; border-radius: 5px;"
+            alt="Description of the image">
+    </div>
+
+
+    <!-- INFORMATION RENDER CONTAINER -->
+    <div class="container">
+        <div class="row" id="row-con">
+        </div>
+    </div>
+
+    <!-- CHAT ROOM -->
+    <div class="draggable-window" id="chat-window">
+        <button class="closeChat" onclick="closeChatWindow()">X</button>
+        <div class="header" id="talking-to"></div>
+        <div class="chat-content" id="chat-content"></div>
+        <div class="chat-input">
+            <textarea id="chat-input" placeholder="Type a message..."></textarea>
+            <button onclick="sendMessage()">&#8617;</button>
+        </div>
+    </div>
+
+
+    <div class="draggable-window" id="draggableWindow">
+        <ul class="nav nav-pills mb-3 d-flex align-items-center" id="pills-tab" role="tablist">
+            <li class="nav-item active">
+                <a class="nav-link" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab"
+                    aria-controls="pills-home" aria-selected="true">ColorSpace</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab"
+                    aria-controls="pills-profile" aria-selected="false">GammaCurve</a>
+            </li>
+            <li class="ml-auto">
+                <button type="button" class="close" aria-label="Close" onclick="$('#draggableWindow').hide()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </li>
+        </ul>
+
+
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- LAB FOR COLOR SPACE -->
+            <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                <div class="row m-3">
+                    <canvas id="lab-canvas" style="margin-left: 80px;"></canvas>
+                    <div class="dropdown pl-3">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="cpReference"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Color Space Standards
+                        </button>
+                        <div class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" onclick="changeColorSpace('sRGB', 'lab-canvas')">sRGB</a>
+                            <a class="dropdown-item" onclick="changeColorSpace('NTSC', 'lab-canvas')">NTSC</a>
+                            <a class="dropdown-item" onclick="changeColorSpace('AdobeRGB', 'lab-canvas')">AdobeRGB</a>
+                            <a class="dropdown-item" onclick="changeColorSpace('DCIP3', 'lab-canvas')">DCIP3</a>
+                            <a class="dropdown-item" onclick="changeColorSpace('BT2020', 'lab-canvas')">BT2020</a>
+                        </div>
+                        <p id="colorSpaceReference">Currently referring: NTSC</p>
+                        <p>Device List</p>
+                        <ul id="labDeviceList"></ul>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- LAB FOR GAMMA CURVE -->
+            <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+
+                <div class="row pl-3">
+                    <div id="tableCodeHolder"></div>
+                    <div class="container d-flex flex-column" style="display:none; width:250px;">
+                        <form class="form-horizontal d-flex flex-column">
+                            <p>Instruction: Enter the value here so as to find and plot the closest Gamma Standard
+                                curve.</p>
+
+                            <div class="form-group">
+                                <label for="gamma" class="control-label">Gamma</label>
+                                <select id="gamma" class="form-control">
+                                    <option value="1.5">1.5</option>
+                                    <option value="2.0" selected>2.0</option>
+                                    <option value="2.5">2.5</option>
+                                    <option value="3.0">3.0</option>
+                                </select>
+                                <div>Gamma correction value (recommend between 1.5 - 3.0)</div>
+                            </div>
+
+                            <div class="form-group" style="display: none;">
+                                <label for="steps" class="control-label">Steps</label>
+                                <input id="steps" type="text" class="form-control" placeholder="" value="256">
+                                <div>This will be the size of your array</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="maxValue" class="control-label">MaxValue</label>
+                                <input id="maxValue" type="text" class="form-control" placeholder="" value="1023">
+                                <div>Maximum PWM value. (8-bit = 255, 10-bit = 1023)</div>
+                            </div>
+                        </form>
+                    </div>
+                    <pre id="output" class="well" style="display:none;">
+            // Gamma brightness lookup table <https://victornpb.github.io/gamma-table-generator><br>
+            // gamma = 2.00 steps = 256 range = 0-255<br>
+            // const uint8_t gamma_lut[256] = {<br>...<br>}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Profile Modal -->
+    <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateProfileModalLabel">Update Profile</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm">
+                        <div class="row">
+                            <!-- Profile Picture Upload Column -->
+                            <div class="col-md-7">
+                                <div id="profilePicContainer">
+                                    <div id="uploadArea">Drag and drop your picture here or click to upload</div>
+                                    <input type="file" id="profilePicInput" accept="image/*">
+                                    <img id="cropImage" alt="Profile Preview">
+                                </div>
+                            </div>
+                            <!-- Input Fields Column -->
+                            <div class="col-md-5">
+                                <!-- User Name -->
+                                <div class="mb-3">
+                                    <label for="userNameInput" class="form-label">User Name</label>
+                                    <input type="text" class="form-control" id="userNameInput" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="positionInput" class="form-label">Position Name</label>
+                                    <input type="text" class="form-control" id="positionInput" required>
+                                </div>
+                                <!-- Company Name -->
+                                <div class="mb-3">
+                                    <label for="companyNameInput" class="form-label">Company Name</label>
+                                    <input type="text" class="form-control" id="companyNameInput" required>
+                                </div>
+                                <!-- Introduction -->
+                                <div class="mb-3">
+                                    <label for="introductionInput" class="form-label">Introduction</label>
+                                    <textarea class="form-control" id="introductionInput" rows="3" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveChangesBtn">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ADD NEW CONTACTS MODAL -->
+    <div class="modal fade" id="newContactsModal" tabindex="-1" aria-labelledby="NewContactsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Contacts</h5>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="" class="form-label">Your Key:</label>
+                            <label id="addMeKey" for=""></label>
+                            <input type="text" class="form-control" id="ConactsKeyInput" required>
+                            <p id="friendWarning" style="color:red;"></p>
+                        </div>
+
+                        <div class="card text-center" style="height: 300px;">
+                            <div class="card-body">
+                                <div class="col">
+                                    <img id="friendAvatar" src="./../../static/images/anonymous.jpg" style="width:200px; height:200px;"alt="">
+                                    <p id="friendName">${about.name}</p>
+                                    <p id="friendKeys" style="display: none;"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="findMyFriend()">Find my Friend</button>
+                    <button type="button" class="btn btn-warning" onclick="addMyfriend()">This is My Friend</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+
+
+    <!-- BOOSTRAP APPEND LIBRARY -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+    <script src="/javascript/multi-player/draggable.js"></script>
+
+    <script src="/javascript/gamma-lookup/lookup-func.js"></script>
+
+    <script src="/javascript/db/renderInfo.js"></script>
+
+    <!-- <script src="/javascript/tmpDevice.js"></script> -->
+
+    <script src="/javascript/multi-player/user.js"></script>
+    <script src="/javascript/multi-player/deviceCompare.js"></script>
+    <script src="/javascript/multi-player/chatroom.js"></script>
+    <script src="/javascript/multi-player/lab.js"></script>
+
+
+    <script src="/javascript/db/pushInfo.js"></script>
+
+
+
+</body>
+
+</html>
